@@ -1,28 +1,31 @@
 import db from "../config/db.js";
 
 export const getDoctors = (req, res) => {
-  db.query("SELECT * FROM doctors", (err, result) => {
-    if (err) return res.status(500).json(err);
+  const { specialization } = req.query;
 
-    res.json(result);
-  });
+  let query = "SELECT * FROM doctors";
+
+  if (specialization) {
+    query += " WHERE specialization = ?";
+    db.query(query, [specialization], (err, result) => {
+      if (err) return res.status(500).json(err);
+      return res.json(result);
+    });
+  } else {
+    db.query(query, (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json(result);
+    });
+  }
 };
 
-export const addDoctor = (req, res) => {
-  const { name, specialization, fees, contact, website, location } = req.body;
+export const getDoctorById = (req, res) => {
+  console.log("ID API HIT"); // 👈 add this
 
-  const query = `
-    INSERT INTO doctors (name, specialization, fees, contact, website, location)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
+  const { id } = req.params;
 
-  db.query(
-    query,
-    [name, specialization, fees, contact, website, location],
-    (err) => {
-      if (err) return res.status(500).json(err);
-
-      res.json({ message: "Doctor added successfully" });
-    }
-  );
+  db.query("SELECT * FROM doctors WHERE id = ?", [id], (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json(result);
+  });
 };
